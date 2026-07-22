@@ -1,0 +1,133 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#020617" />
+    <meta name="description" content="Private listen, read, record, and repeat practice for multilingual families." />
+    <link rel="icon" href="/reading-star-preview/favicon.svg" type="image/svg+xml" />
+    <title>ReadingStar — Read together, grow together</title>
+    <style>
+      :root {
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --glass-bg: rgba(15, 23, 42, 0.6);
+      }
+
+      body {
+        font-family: 'Nunito', sans-serif;
+        overscroll-behavior-y: none; /* Prevent pull-to-refresh */
+        -webkit-tap-highlight-color: transparent;
+        background-color: #020617; /* Slate-950 base */
+        color: #f1f5f9;
+      }
+
+      /* Enhanced 'Deep Universe' Background */
+      .star-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+        /* Richer gradient: Deepest Indigo center to Void Dark edges */
+        background: radial-gradient(circle at 50% 30%, #1e1b4b 0%, #0f172a 50%, #020617 100%); 
+      }
+      
+      .star-bg::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        /* Refined Noise Filter */
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.07'/%3E%3C/svg%3E");
+        opacity: 0.5;
+        mix-blend-mode: overlay;
+      }
+
+      /* Subtle Vignette Overlay */
+      .star-bg::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 50% 50%, transparent 0%, rgba(0,0,0,0.4) 100%);
+        z-index: 1;
+      }
+
+      /* Premium Scrollbar */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 100vh;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+      
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden; /* Handle scrolling within #root */
+      }
+      #root {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      *:focus-visible {
+        outline: 2px solid #38bdf8; /* Sky-400 */
+        outline-offset: 2px;
+        border-radius: 4px;
+      }
+      button:focus, select:focus, input:focus, textarea:focus {
+        outline: none;
+      }
+
+      /* Animation Classes */
+      .animate-shake {
+        animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+      }
+      @keyframes shake {
+        10%, 90% { transform: translate3d(-1px, 0, 0); }
+        20%, 80% { transform: translate3d(2px, 0, 0); }
+        30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+        40%, 60% { transform: translate3d(4px, 0, 0); }
+      }
+
+      @keyframes fade-in-up {
+        from { opacity: 0; transform: translateY(15px) scale(0.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      .animate-fade-in-up {
+        animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      
+      /* Glass Panel Utility */
+      .glass-panel {
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+    </style>
+  <script type="module" crossorigin src="/reading-star-preview/assets/index-qzhZGIEV.js"></script>
+  <link rel="stylesheet" crossorigin href="/reading-star-preview/assets/index-CRfZQ1hb.css">
+</head>
+  <body class="antialiased text-slate-100 selection:bg-sky-500/40 selection:text-white">
+    <div class="star-bg"></div>
+    <div id="root"></div>
+  </body>
+</html>
