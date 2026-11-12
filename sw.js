@@ -16,10 +16,10 @@
  * never touched by this cache.
  */
 
-/* global ["apple-touch-icon.png","assets/ParentDashboard-BWi0uK6P.js","assets/PlayerWrapper-kl7OAxr_.js","assets/index-ByNjO0Jg.css","assets/index-DZlGenaW.js","assets/ttsClientContract-mS81Vfh8.js","favicon.svg","icon-192.png","icon-512.png","icon-maskable-192.png","icon-maskable-512.png","index.html","manifest.webmanifest"], a2af785a3ad8 */
+/* global ["apple-touch-icon.png","assets/ParentDashboard-BdWdkU3x.js","assets/PlayerWrapper-Zbl0XE7o.js","assets/index-DgS5CYHk.js","assets/index-xbjuSMS4.css","assets/nunito-latin-var-CjueodBP.woff2","assets/ttsWarmup-B7qd1eNP.js","favicon.svg","fonts/Nunito-OFL.txt","icon-192.png","icon-512.png","icon-maskable-192.png","icon-maskable-512.png","index.html","manifest.webmanifest"], 0b78f73375a6 */
 
-const PRECACHE_MANIFEST = ["apple-touch-icon.png","assets/ParentDashboard-BWi0uK6P.js","assets/PlayerWrapper-kl7OAxr_.js","assets/index-ByNjO0Jg.css","assets/index-DZlGenaW.js","assets/ttsClientContract-mS81Vfh8.js","favicon.svg","icon-192.png","icon-512.png","icon-maskable-192.png","icon-maskable-512.png","index.html","manifest.webmanifest"];
-const BUILD_ID = 'a2af785a3ad8';
+const PRECACHE_MANIFEST = ["apple-touch-icon.png","assets/ParentDashboard-BdWdkU3x.js","assets/PlayerWrapper-Zbl0XE7o.js","assets/index-DgS5CYHk.js","assets/index-xbjuSMS4.css","assets/nunito-latin-var-CjueodBP.woff2","assets/ttsWarmup-B7qd1eNP.js","favicon.svg","fonts/Nunito-OFL.txt","icon-192.png","icon-512.png","icon-maskable-192.png","icon-maskable-512.png","index.html","manifest.webmanifest"];
+const BUILD_ID = '0b78f73375a6';
 const CACHE_NAME = `readingstar-shell-${BUILD_ID}`;
 const API_PREFIX = new URL('api/', self.registration.scope).pathname;
 
@@ -29,13 +29,32 @@ const precacheUrls = () =>
 const documentUrl = () => new URL('index.html', self.registration.scope).href;
 
 self.addEventListener('install', (event) => {
+  // Take over from a previous worker immediately. Without this a fixed
+  // worker stays "waiting" until every tab of the origin closes — on
+  // Safari that can be never, so clients would be stuck on a broken
+  // build until they manually cleared site data.
+  self.skipWaiting();
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
       // 'reload' bypasses any stale HTTP cache so a new build precaches
-      // exactly what was just deployed.
+      // exactly what was just deployed. Responses are re-wrapped without
+      // Content-Encoding/Content-Length: compression hosts (Cloudflare serves
+      // brotli) store a decoded body in the Cache API while keeping the
+      // header, and replaying that response for a navigation makes the
+      // browser decompress plain bytes — net::ERR_FAILED, page never mounts.
       await Promise.all(
-        precacheUrls().map((url) => cache.add(new Request(url, { cache: 'reload' }))),
+        precacheUrls().map(async (url) => {
+          const response = await fetch(new Request(url, { cache: 'reload' }));
+          if (!response.ok) throw new Error(`Precache ${url} failed: ${response.status}`);
+          const headers = new Headers(response.headers);
+          headers.delete('Content-Encoding');
+          headers.delete('Content-Length');
+          await cache.put(url, new Response(await response.arrayBuffer(), {
+            status: response.status,
+            headers,
+          }));
+        }),
       );
     })(),
   );
@@ -68,7 +87,18 @@ const shellEntry = async (request) => {
   // outside the manifest); fall back to the cached document, then network.
   const document = await cache.match(documentUrl(), MATCH_OPTIONS);
   if (document) return document;
-  return fetch(request);
+  const response = await fetch(request);
+  // Navigation requests run with redirect:"manual"; handing a redirect
+  // back to the browser throws "Redirect not allowed". Serve the cached
+  // shell's body (status 200) under the redirect's location instead.
+  if (response.type === 'opaqueredirect' || (response.status >= 300 && response.status < 400)) {
+    const shell = await cache.match(documentUrl(), MATCH_OPTIONS);
+    if (shell) return new Response(shell.body, {
+      status: 200,
+      headers: { 'Content-Type': 'text/html;charset=utf-8' },
+    });
+  }
+  return response;
 };
 
 self.addEventListener('fetch', (event) => {
